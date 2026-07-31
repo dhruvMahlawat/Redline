@@ -152,7 +152,7 @@ history over the free tier's zero-storage guarantee — future work, not faked h
 
 ## Stack
 
-Flask, pymupdf, tesseract (via pytesseract), Groq (`groq`), Flask-Limiter,
+Flask, pymupdf, tesseract (via pytesseract), Groq/Gemini (`groq/Gemini`), Flask-Limiter,
 vanilla JS for the drag-and-drop, pytest for tests. No database, no build step, no
 frontend framework — kept it small on purpose.
 
