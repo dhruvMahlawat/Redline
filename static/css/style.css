@@ -1,0 +1,154 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+    --paper: #f7f5f0;
+    --ink: #1c1f24;
+    --ink-soft: #565c66;
+    --redline: #b3261e;
+    --redline-soft: #e8d9d7;
+    --rule: #d8d3c7;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+}
+
+header {
+    padding: 4rem 2rem 2rem;
+    text-align: center;
+    border-bottom: 1px solid var(--rule);
+}
+
+h1 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 3rem;
+    font-weight: 600;
+    margin: 0;
+    /* literal redline underline - a strike of red under the wordmark */
+    text-decoration: underline;
+    text-decoration-color: var(--redline);
+    text-decoration-thickness: 3px;
+    text-underline-offset: 8px;
+}
+
+.tagline {
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+    margin-top: 1rem;
+}
+
+main {
+    max-width: 720px;
+    margin: 3rem auto;
+    padding: 0 2rem;
+}
+
+#drop-zone {
+    border: 2px dashed var(--rule);
+    border-radius: 4px;
+    padding: 4rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+#drop-zone:hover,
+#drop-zone.dragover {
+    border-color: var(--redline);
+    background: var(--redline-soft);
+}
+
+#drop-text {
+    color: var(--ink-soft);
+    font-size: 1rem;
+    margin: 0;
+}
+
+#drop-zone.busy {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#status {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+}
+
+#results {
+    margin-top: 2.5rem;
+}
+
+.clause-card {
+    border-left: 3px solid var(--rule);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    background: #fff;
+}
+
+.clause-card.flagged {
+    border-left-color: var(--redline);
+}
+
+.clause-card h3 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 1rem;
+    margin: 0 0 0.4rem;
+}
+
+.clause-card p {
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+#results h2 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+}
+
+#results h2:first-child {
+    margin-top: 0;
+}
+
+.badge {
+    display: inline-block;
+    margin-top: 0.5rem;
+    margin-right: 0.6rem;
+    font-size: 0.75rem;
+    color: var(--redline);
+    font-weight: 500;
+}
+
+.page-badge {
+    color: var(--ink-soft);
+    background: var(--rule);
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+}
+
+.page-preview {
+    display: block;
+    max-width: 100%;
+    margin-top: 0.75rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+}
+
+.privacy-note {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    margin: 3rem 0 2rem;
+}

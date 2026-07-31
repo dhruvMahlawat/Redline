@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Redline</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Redline</h1>
+        <p class="tagline">Drop your lease in. We'll flag what needs a second look.</p>
+    </header>
+
+    <main>
+        <div id="drop-zone">
+            <p id="drop-text">Drag & drop your lease PDF here, or click to choose a file</p>
+            <input type="file" id="file-input" accept=".pdf" hidden>
+        </div>
+
+        <div id="status"></div>
+
+        <div id="results" hidden>
+            <!-- filled in by main.js once we get a response back -->
+        </div>
+    </main>
+
+    <p class="privacy-note">Your document is processed in memory and never saved. Read more in the README.</p>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
