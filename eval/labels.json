@@ -1,0 +1,27 @@
+{
+    "lease_01_numbered_clean.pdf": {
+        "monthly_rent": "1800",
+        "security_deposit": "1800",
+        "expected_red_flags": 0
+    },
+    "lease_02_unnumbered_clean.pdf": {
+        "monthly_rent": "2100",
+        "security_deposit": "2100",
+        "expected_red_flags": 0
+    },
+    "lease_03_red_flags.pdf": {
+        "monthly_rent": "1500",
+        "security_deposit": "1500",
+        "expected_red_flags": 2
+    },
+    "lease_04_blank_template.pdf": {
+        "monthly_rent": null,
+        "security_deposit": null,
+        "expected_red_flags": null
+    },
+    "lease_05_label_value_layout.pdf": {
+        "monthly_rent": "1350",
+        "security_deposit": "1350",
+        "expected_red_flags": 0
+    }
+}
