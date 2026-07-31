@@ -1,0 +1,8 @@
+flask
+pymupdf
+google-genai
+python-dotenv
+gunicorn
+pytesseract
+pillow
+flask-limiter

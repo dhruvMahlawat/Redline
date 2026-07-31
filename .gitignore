@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.pdf
+!eval/fixtures/*.pdf
+.DS_Store
