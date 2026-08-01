@@ -1,10 +1,18 @@
+import os
 import re
 import io
 import fitz  # pymupdf
 import pytesseract
 from PIL import Image
 
+# only needed if tesseract isn't on PATH (common on Windows if you didn't
+# check "add to PATH" during install) - leave TESSERACT_CMD unset on
+# Mac/Linux/most Windows setups and pytesseract will find it on its own
+if os.environ.get("TESSERACT_CMD"):
+    pytesseract.pytesseract.tesseract_cmd = os.environ["TESSERACT_CMD"]
+
 MIN_TEXT_LENGTH_BEFORE_OCR = 20  # a page with less text than this is probably a scanned image
+MIN_IMAGE_COVERAGE_FOR_OCR = 0.3  # an image covering this much of the page is probably the real content, not a logo
 
 
 def parse_pdf(file_bytes: bytes) -> dict:
@@ -27,8 +35,11 @@ def parse_pdf(file_bytes: bytes) -> dict:
         page_breaks.append((len(full_text), page_num))
         page_text = page.get_text()
 
-        if len(page_text.strip()) < MIN_TEXT_LENGTH_BEFORE_OCR:
-            page_text = _ocr_page(page)
+        # a page can have a short text caption sitting next to a scanned image -
+        # get_text() alone would clear the length check and the image content
+        # would never get read at all, so check for a big embedded image too
+        if len(page_text.strip()) < MIN_TEXT_LENGTH_BEFORE_OCR or _has_large_image(page):
+            page_text += _ocr_page(page)
 
         full_text += page_text
 
@@ -38,10 +49,21 @@ def parse_pdf(file_bytes: bytes) -> dict:
     return {"full_text": full_text, "clauses": clauses, "page_breaks": page_breaks}
 
 
+def _has_large_image(page) -> bool:
+    page_area = page.rect.width * page.rect.height
+    if not page_area:
+        return False
+    for img in page.get_images():
+        for rect in page.get_image_rects(img[0]):
+            if (rect.width * rect.height) / page_area >= MIN_IMAGE_COVERAGE_FOR_OCR:
+                return True
+    return False
+
+
 def _ocr_page(page) -> str:
     """Renders a page to an image and reads it with tesseract - for scanned
     leases that have no real text layer at all."""
-    pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))  # 2x zoom, OCR reads small text more reliably at higher res
+    pix = page.get_pixmap(matrix=fitz.Matrix(2.5, 2.5))  # 2x zoom, OCR reads small text more reliably at higher res
     image = Image.open(io.BytesIO(pix.tobytes("png")))
     return pytesseract.image_to_string(image)
 
