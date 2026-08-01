@@ -1,14 +1,17 @@
 import base64
 import fitz
 
+PAGE_PADDING_RATIO = 0.15  # extra page-height added above/below the matched quote, for context
+
 
 def render_highlighted_pages(file_bytes: bytes, citations: list[dict]) -> dict:
     """
     citations: [{"page": int, "quote": str}, ...]
-    Returns {page_number: base64_png} for every page referenced, with a red box
-    drawn around the quote wherever it can be found on that page. If the quote
-    can't be located (paraphrased slightly, OCR text, etc.), the page is still
-    rendered - just without a box - so there's always something to look at.
+    Returns {page_number: base64_png} for every page referenced. When the quote
+    can be located, renders a tight crop around it (with a red box) instead of
+    the whole page - faster to scan, and it's obvious what you're looking at.
+    Falls back to the full page, unboxed, when the quote can't be found (fuzzy
+    OCR text, paraphrased slightly, etc.) - so there's still something to see.
     """
     doc = fitz.open(stream=file_bytes, filetype="pdf")
     pages_needed = {c["page"] for c in citations if c.get("page")}
@@ -19,25 +22,49 @@ def render_highlighted_pages(file_bytes: bytes, citations: list[dict]) -> dict:
             continue
 
         page = doc[page_num - 1]
-        shape = page.new_shape()
-        drew_a_box = False
+        page_citations = [c for c in citations if c.get("page") == page_num]
 
-        for c in citations:
-            if c.get("page") != page_num:
-                continue
-            for rect in _find_rects(page, c["quote"]):
-                shape.draw_rect(rect)
-                drew_a_box = True
+        rects = []
+        for c in page_citations:
+            rects.extend(_find_rects(page, c["quote"]))
 
-        if drew_a_box:
-            shape.finish(color=(0.7, 0.15, 0.11), width=1.5)
-            shape.commit()
-
-        pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))
-        images[page_num] = base64.b64encode(pix.tobytes("png")).decode()
+        if rects:
+            images[page_num] = _render_cropped(page, rects)
+        else:
+            images[page_num] = _render_full_page(page)
 
     doc.close()
     return images
+
+
+def _render_cropped(page, rects: list) -> str:
+    """Draws boxes around every matched rect, then crops to their combined
+    bounding box plus padding, instead of returning the whole page."""
+    shape = page.new_shape()
+    for rect in rects:
+        shape.draw_rect(rect)
+    shape.finish(color=(0.7, 0.15, 0.11), width=1.5)
+    shape.commit()
+
+    bounds = rects[0]
+    for rect in rects[1:]:
+        bounds |= rect
+
+    padding = page.rect.height * PAGE_PADDING_RATIO
+    clip = fitz.Rect(
+        page.rect.x0,
+        max(page.rect.y0, bounds.y0 - padding),
+        page.rect.x1,
+        min(page.rect.y1, bounds.y1 + padding),
+    )
+
+    pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5), clip=clip)
+    return base64.b64encode(pix.tobytes("png")).decode()
+
+
+def _render_full_page(page) -> str:
+    pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))
+    return base64.b64encode(pix.tobytes("png")).decode()
 
 
 def _find_rects(page, quote: str) -> list:
