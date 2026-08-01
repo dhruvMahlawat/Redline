@@ -3,6 +3,6 @@ pymupdf
 google-genai
 python-dotenv
 gunicorn
-pytesseract
+pytesseract #you have to downlaod Tesseract separately from web for Windows
 pillow
 flask-limiter
