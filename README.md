@@ -38,13 +38,13 @@ no text (a scanned photo of a lease, no real text layer), it falls back to OCR v
 tesseract instead of giving up. A regex pass also tries to find section headings,
 used only for display/page-tracking — never for what the AI actually reads.
 
-**2. Extract facts with Groq/Gemini.** The full document text goes in with a schema —
+**2. Extract facts with Gemini.** The full document text goes in with a schema —
 rent, deposit, notice period, red flags — and every claim needs an exact quote. No
 quote, no fact.
 
 **3. Verify each quote**, two ways: does it actually exist in the document (catches
 an invented citation), and does it actually support the claim (a second, separate
-Groq/Gemini call, so it's not just agreeing with its own first answer).
+Gemini call, so it's not just agreeing with its own first answer).
 
 **4. Show it honestly, with the receipts.** Passed both checks → shown with its page
 number, clickable to see that page rendered with a box around the actual line.
@@ -68,8 +68,8 @@ bug above.
 python3 eval/run_eval.py
 ```
 
-Makes real Groq/Gemini calls (needs your key, costs a few cents). Paces itself between
-fixtures and retries automatically if it hits Groq's/Gemini's free-tier rate limit — if
+Makes real Gemini calls (needs your key, costs a few cents). Paces itself between
+fixtures and retries automatically if it hits Gemini's free-tier rate limit — if
 you're on the free tier, hitting that limit is expected, and the script handles it
 instead of crashing. Reports field accuracy and, more
 importantly, what fraction of "high confidence" facts were actually correct — that
@@ -91,7 +91,7 @@ brew install tesseract
 ```
 
 ```bash
-cp .env.example .env   # add your Groq API key
+cp .env.example .env   # add your GEMINI API key
 python3 app.py
 ```
 
@@ -103,7 +103,7 @@ little slow and honest than fast and occasionally wrong.
 
 ## Rate limiting
 
-`/analyze` is capped at 10 requests/hour per IP, since each call makes 2 real Groq/Gemini
+`/analyze` is capped at 10 requests/hour per IP, since each call makes 2 real Gemini
 requests and I didn't want an open endpoint that could run up a bill. It's in-memory,
 which means two honest caveats: the count resets if the server restarts, and if you
 deploy with multiple workers, each worker counts separately (2 workers ≈ 20/hour in
@@ -125,8 +125,8 @@ that meaningfully needs the real API.
 There's a `Procfile` for Render/Railway/similar (`gunicorn --workers=2 --threads=4
 --timeout=60`). The threads matter — gunicorn's default is 1 worker, 1 thread, which
 would make every visitor wait in line behind whoever uploaded first. The longer
-timeout is because two sequential Groq/Gemini calls can take a while on a longer lease,
-and the default 30s can cut that off mid-request. Set `GROQ_API_KEY` as a real
+timeout is because two sequential Gemini calls can take a while on a longer lease,
+and the default 30s can cut that off mid-request. Set `GEMINI_API_KEY` as a real
 environment variable on the platform, never in a committed file.
 
 ## What's here vs. what's just planned
@@ -152,7 +152,7 @@ history over the free tier's zero-storage guarantee — future work, not faked h
 
 ## Stack
 
-Flask, pymupdf, tesseract (via pytesseract), Groq/Gemini (`groq/Gemini`), Flask-Limiter,
+Flask, pymupdf, tesseract (via pytesseract), Gemini (`Gemini`), Flask-Limiter,
 vanilla JS for the drag-and-drop, pytest for tests. No database, no build step, no
 frontend framework — kept it small on purpose.
 
