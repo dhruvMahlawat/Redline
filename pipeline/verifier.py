@@ -67,27 +67,29 @@ def verify_extraction(document_text: str, extraction: ExtractionResult, page_bre
     claims += [{"claim": rf.description, "quote": rf.source_quote} for rf in extraction.red_flags]
 
     support_checks = check_claims_supported(claims)
-    support_by_index = {c.index: c.supported for c in support_checks}
+    support_by_index = {c.index: c for c in support_checks}
 
     results = {"facts": [], "red_flags": []}
     index = 0
 
     for fact in extraction.facts:
         quote_exists, char_index = find_quote(fact.source_quote, document_text)
-        supported = support_by_index.get(index, False)
+        check = support_by_index.get(index)
         results["facts"].append({
             **fact.model_dump(),
-            "confidence": _confidence_label(quote_exists, supported),
+            "confidence": _confidence_label(quote_exists, check.supported if check else False),
+            "reasoning": _reasoning_text(quote_exists, check),
             "page": page_for_index(char_index, page_breaks) if quote_exists else None,
         })
         index += 1
 
     for flag in extraction.red_flags:
         quote_exists, char_index = find_quote(flag.source_quote, document_text)
-        supported = support_by_index.get(index, False)
+        check = support_by_index.get(index)
         results["red_flags"].append({
             **flag.model_dump(),
-            "confidence": _confidence_label(quote_exists, supported),
+            "confidence": _confidence_label(quote_exists, check.supported if check else False),
+            "reasoning": _reasoning_text(quote_exists, check),
             "page": page_for_index(char_index, page_breaks) if quote_exists else None,
         })
         index += 1
@@ -96,6 +98,16 @@ def verify_extraction(document_text: str, extraction: ExtractionResult, page_bre
 
 
 def _confidence_label(quote_exists: bool, supported: bool) -> str:
-    if quote_exists and supported:
+    if not quote_exists:
+        return "low"      # quote doesn't appear in the document at all - likely invented
+    if supported:
         return "high"
-    return "needs_review"
+    return "medium"        # quote is real, but doesn't clearly back up the claim
+
+
+def _reasoning_text(quote_exists: bool, check: SupportCheck | None) -> str:
+    if not quote_exists:
+        return "This quote wasn't found verbatim in the document."
+    if check is None:
+        return "Verification check didn't return a result for this item."
+    return check.reasoning
