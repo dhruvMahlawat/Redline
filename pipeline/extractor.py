@@ -40,6 +40,8 @@ auto-renewal traps, deposit terms that seem to favor the landlord, or anything v
 For every fact AND every red flag, include the exact sentence from the lease it came from
 in source_quote - copy it verbatim, don't paraphrase it. If a fact isn't in the lease, leave it out.
 
+if the fact's identity isn't clear from its own sentence, include the preceding line too.
+
 Lease text:
 ---
 {lease_text}
