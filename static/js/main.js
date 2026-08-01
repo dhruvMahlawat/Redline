@@ -86,14 +86,14 @@ function renderResults(facts, redFlags, pageImages) {
         const heading = document.createElement("h2");
         heading.textContent = "Key facts";
         results.appendChild(heading);
-        facts.forEach((f) => results.appendChild(buildCard(f.field.replace(/_/g, " "), f.value, f, pageImages)));
+        facts.forEach((f, i) => results.appendChild(buildCard(f.field.replace(/_/g, " "), f.value, f, i, pageImages)));
     }
 
     if (redFlags.length) {
         const heading = document.createElement("h2");
         heading.textContent = "Worth a second look";
         results.appendChild(heading);
-        redFlags.forEach((f) => results.appendChild(buildCard(f.severity + " severity", f.description, f, pageImages)));
+        redFlags.forEach((f, i) => results.appendChild(buildCard(f.severity + " severity", f.description, f, facts.length + i, pageImages)));
     }
 
     results.hidden = false;
@@ -104,7 +104,7 @@ const CONFIDENCE_WARNINGS = {
     low: "⚠ quote not found in document",
 };
 
-function buildCard(title, body, item, pageImages) {
+function buildCard(title, body, item, imageKey, pageImages) {
     const { confidence, page, source_quote, reasoning } = item;
     const card = document.createElement("div");
     card.className = "clause-card" + (confidence !== "high" ? " flagged" : "");
@@ -125,7 +125,7 @@ function buildCard(title, body, item, pageImages) {
         card.appendChild(quote);
     }
 
-    const imageData = pageImages && pageImages[page];
+    const imageData = pageImages && pageImages[imageKey];
 
     if (page) {
         const pageTag = document.createElement("span");

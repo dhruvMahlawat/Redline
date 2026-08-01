@@ -67,8 +67,8 @@ def analyze():
         return jsonify({"error": f"couldn't analyze this lease: {str(e)}"}), 500
 
     citations = [
-        {"page": f["page"], "quote": f["source_quote"]}
-        for f in verified["facts"] + verified["red_flags"]
+        {"key": i, "page": f["page"], "quote": f["source_quote"]}
+        for i, f in enumerate(verified["facts"] + verified["red_flags"])
         if f.get("page")
     ]
     page_images = render_highlighted_pages(file_bytes, citations)
