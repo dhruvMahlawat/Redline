@@ -6,3 +6,4 @@ venv/
 *.pdf
 !eval/fixtures/*.pdf
 .DS_Store
+check_ocr.py

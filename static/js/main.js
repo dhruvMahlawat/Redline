@@ -35,6 +35,16 @@ fileInput.addEventListener("change", () => {
     }
 });
 
+function setStatus(text, showSpinner = false) {
+    status.innerHTML = "";
+    if (showSpinner) {
+        const spinner = document.createElement("span");
+        spinner.className = "spinner";
+        status.appendChild(spinner);
+    }
+    status.appendChild(document.createTextNode(text));
+}
+
 async function handleFile(file) {
     if (!file.name.toLowerCase().endsWith(".pdf")) {
         status.textContent = "Please upload a PDF.";
@@ -43,7 +53,7 @@ async function handleFile(file) {
 
     isProcessing = true;
     dropZone.classList.add("busy");
-    status.textContent = "Reading your lease...";
+    setStatus("Reading your lease...", true);
     results.hidden = true;
 
     const formData = new FormData();
@@ -54,14 +64,14 @@ async function handleFile(file) {
         const data = await res.json();
 
         if (!res.ok) {
-            status.textContent = data.error || "Something went wrong.";
+            setStatus(data.error || "Something went wrong.");
             return;
         }
 
-        status.textContent = `Analyzed ${data.clause_count} clauses.`;
+        setStatus(`Analyzed ${data.clause_count} clauses.`);
         renderResults(data.facts, data.red_flags, data.page_images);
     } catch (err) {
-        status.textContent = "Couldn't reach the server.";
+        setStatus("Couldn't reach the server.");
     } finally {
         isProcessing = false;
         dropZone.classList.remove("busy");
@@ -76,22 +86,28 @@ function renderResults(facts, redFlags, pageImages) {
         const heading = document.createElement("h2");
         heading.textContent = "Key facts";
         results.appendChild(heading);
-        facts.forEach((f) => results.appendChild(buildCard(f.field.replace(/_/g, " "), f.value, f.confidence, f.page, pageImages)));
+        facts.forEach((f) => results.appendChild(buildCard(f.field.replace(/_/g, " "), f.value, f, pageImages)));
     }
 
     if (redFlags.length) {
         const heading = document.createElement("h2");
         heading.textContent = "Worth a second look";
         results.appendChild(heading);
-        redFlags.forEach((f) => results.appendChild(buildCard(f.severity + " severity", f.description, f.confidence, f.page, pageImages)));
+        redFlags.forEach((f) => results.appendChild(buildCard(f.severity + " severity", f.description, f, pageImages)));
     }
 
     results.hidden = false;
 }
 
-function buildCard(title, body, confidence, page, pageImages) {
+const CONFIDENCE_WARNINGS = {
+    medium: "⚠ quote doesn't clearly support this",
+    low: "⚠ quote not found in document",
+};
+
+function buildCard(title, body, item, pageImages) {
+    const { confidence, page, source_quote, reasoning } = item;
     const card = document.createElement("div");
-    card.className = "clause-card" + (confidence === "needs_review" ? " flagged" : "");
+    card.className = "clause-card" + (confidence !== "high" ? " flagged" : "");
 
     const titleEl = document.createElement("h3");
     titleEl.textContent = title;
@@ -101,6 +117,13 @@ function buildCard(title, body, confidence, page, pageImages) {
 
     card.appendChild(titleEl);
     card.appendChild(text);
+
+    if (source_quote) {
+        const quote = document.createElement("blockquote");
+        quote.className = "source-quote";
+        quote.textContent = source_quote;
+        card.appendChild(quote);
+    }
 
     const imageData = pageImages && pageImages[page];
 
@@ -115,11 +138,18 @@ function buildCard(title, body, confidence, page, pageImages) {
         card.appendChild(pageTag);
     }
 
-    if (confidence === "needs_review") {
+    if (CONFIDENCE_WARNINGS[confidence]) {
         const badge = document.createElement("span");
         badge.className = "badge";
-        badge.textContent = "⚠ needs human review";
+        badge.textContent = CONFIDENCE_WARNINGS[confidence];
         card.appendChild(badge);
+
+        if (reasoning) {
+            const why = document.createElement("p");
+            why.className = "reasoning";
+            why.textContent = reasoning;
+            card.appendChild(why);
+        }
     }
 
     return card;

@@ -83,6 +83,22 @@ main {
     font-size: 0.95rem;
 }
 
+.spinner {
+    display: inline-block;
+    width: 0.8rem;
+    height: 0.8rem;
+    margin-right: 0.5rem;
+    vertical-align: -1px;
+    border: 2px solid var(--rule);
+    border-top-color: var(--redline);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 #results {
     margin-top: 2.5rem;
 }
@@ -120,6 +136,22 @@ main {
 
 #results h2:first-child {
     margin-top: 0;
+}
+
+.source-quote {
+    margin: 0.5rem 0 0;
+    padding-left: 0.75rem;
+    border-left: 2px solid var(--rule);
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+}
+
+.reasoning {
+    margin: 0.4rem 0 0;
+    font-size: 0.8rem;
+    color: var(--redline);
 }
 
 .badge {
